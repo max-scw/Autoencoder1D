@@ -1,3 +1,5 @@
+from argparse import ArgumentParser
+
 import torch
 import torch.nn as nn
 # dataset
@@ -6,6 +8,7 @@ from torch.utils.data import DataLoader, random_split
 from torch.optim import Adam
 
 import numpy as np
+import pandas as pd
 from tqdm import trange, tqdm
 from pathlib import Path
 import matplotlib.pyplot as plt
@@ -23,7 +26,7 @@ def train(
     dataloader_training: DataLoader,
     n_epochs: int,
     dataloader_validation: DataLoader = None,
-    criterion=nn.Module,
+    criterion: nn.Module = nn.CrossEntropyLoss(),
     optimizer=None,
     device: Union[str, int] = "cpu",
 ) -> Tuple[nn.Module, List[Dict[str, Any]]]:
@@ -121,9 +124,31 @@ def train(
 
 
 if __name__ == "__main__":
-    batch_sz = 4
-    n_workers = 2
-    num_epochs = 5
+    parser = ArgumentParser()
+
+    parser.add_argument('--data', type=str, help="Path a file that lists all training data")
+    parser.add_argument("--signal-len", type=int, default=2 ** 16,
+                        help="Maximum length to which a signal is padded or cropped it is longer")
+
+    parser.add_argument("--epochs", type=int, default=5, help="Number of training epochs")
+    parser.add_argument("--batch-size", type=int, default=16, help="Total batch size (for all GPUs)")
+
+    parser.add_argument("--workers", type=int, default=2, help="Maximum number of dataloader workers")
+    parser.add_argument("--device", default="cpu", help="Cuda device, i.e. 0 or 0,1,2,3, or cpu")
+
+    parser.add_argument("--process-title", type=str, default=None, help="Names the process")
+
+    opt = parser.parse_args()
+
+    if opt.process_title:
+        from setproctitle import setproctitle
+        setproctitle(opt.process_title)
+
+    # opt.epochs = 5
+    # opt.batch_size = 4
+    # opt.workers = 2
+    # opt.signal_len = 2**16
+    # opt.data = r"../CaptureDataParser/data/Testfiles.txt"
 
     # # create data
     # sensor_data = np.random.randn(1000, 5, 256)  # Example data
@@ -134,15 +159,15 @@ if __name__ == "__main__":
 
     # read from files
     dataset = DatasetCSV(
-        info_file=r"../CaptureDataParser/data/Testfiles.txt",
-        signal_len=2**16,
+        info_file=opt.data,
+        signal_len=opt.signal_len,
         normalize=True
     )
     # get one datapoint to adjust the autoencoder according to the data shape
     data_shape = dataset[0].shape
 
     # Create DataLoader
-    dataloader = DataLoader(dataset, batch_size=batch_sz, shuffle=True, num_workers=n_workers)
+    dataloader = DataLoader(dataset, batch_size=opt.batch_size, shuffle=True, num_workers=opt.workers)
 
     # Initialize the model, define the loss function and the optimizer
     autoencoder = Conv1DAutoencoder(n_channels=data_shape[0], len_sig=data_shape[1])
@@ -150,28 +175,17 @@ if __name__ == "__main__":
     optimizer = Adam(autoencoder.parameters(), lr=0.001)
 
     # Training loop
-    autoencoder = train(
+    autoencoder, hist = train(
         autoencoder,
         dataloader_training=dataloader,
-        n_epochs=num_epochs,
+        n_epochs=opt.epochs,
         criterion=criterion,
         optimizer=optimizer,
         device="cpu"
     )
 
-    # for epoch in (pbar := trange(n_epochs, desc="Epoch")):
-    #     for data in dataloader:
-    #         # Zero the parameter gradients
-    #         optimizer.zero_grad()
-    #
-    #         # Forward pass
-    #         outputs = model(data)
-    #
-    #         # Compute the loss
-    #         loss = criterion(outputs, data)
-    #
-    #         # Backward pass and optimize
-    #         loss.backward()
-    #         optimizer.step()
-    #
-    #     pbar.set_postfix({"Loss": round(loss.item(), 5)})
+    df = pd.DataFrame(hist)
+    df.plot(xlabel="Epoch", ylabel="MSE Loss", title="Training Loss")
+
+    plt.savefig("Autoencoder_TrainingLoss.png")
+    torch.save(autoencoder.state_dict(), r"autoencoder.pt")
