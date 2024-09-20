@@ -9,8 +9,7 @@ class Conv1DAutoencoder(nn.Module):
             n_channels: int = 1,
             n_depth: int = 3,
             n_channels_out_0: int = 16,
-            stride: int = 2,
-            device: torch.device = torch.device("cpu"),
+            stride: int = 2
     ):
         super().__init__()
 
@@ -40,8 +39,7 @@ class Conv1DAutoencoder(nn.Module):
                     out_channels=out_channels,
                     kernel_size=3,
                     stride=stride,
-                    padding=1,
-                    device=device
+                    padding=1
                 ),
                 # activation function
                 nn.ReLU()
@@ -54,7 +52,7 @@ class Conv1DAutoencoder(nn.Module):
             # flatten so that the input to the dense layer is an array
             nn.Flatten(),
             # dense layer
-            nn.Linear(conv_output_size, 2, device=device)  # Compress to 2 dimensions
+            nn.Linear(conv_output_size, 2)  # Compress to 2 dimensions
         ]
         # build model
         self.encoder = nn.Sequential(*layers)
@@ -62,7 +60,7 @@ class Conv1DAutoencoder(nn.Module):
         # --- Decoder
         layers = [
             # dense layer that enlarges the two-neuron-signal to higher dimensions
-            nn.Linear(2, conv_output_size, device=device),
+            nn.Linear(2, conv_output_size),
             nn.ReLU(),
             # unflatten the input again to the minimal shape of the signal
             nn.Unflatten(1, (n_channels_out_max, size_factor)),  # Reshape to (batch_size, 64, reduced_time_steps)
@@ -86,8 +84,7 @@ class Conv1DAutoencoder(nn.Module):
                     kernel_size=3,
                     stride=stride,
                     padding=1,
-                    output_padding=1,
-                    device=device
+                    output_padding=1
                 ),
                 activation_fnc,
             ]
