@@ -83,11 +83,14 @@ if __name__ == "__main__":
 
     encoded_data = np.array(encoded)
     # save results
-    np.savetxt(f"{path_to_weights.stem}_{path_to_data.stem}.csv", encoded_data, delimiter=",")
+    filename = Path(f"{path_to_weights.stem}_{path_to_data.stem}.csv")
+    np.savetxt(filename, encoded_data, delimiter=",")
 
     # plot results
     fig, ax = plt.subplots()
-    ax.plot(encoded_data[:, 0], encoded_data[:, 1])
+    ax.scatter(encoded_data[:, 0], encoded_data[:, 1], s=10, alpha=0.5, picker=True)
     ax.set_title(f"{path_to_weights.stem}: {path_to_data.name} ({len(dataset)} points)")
     ax.set_xlabel("Encoded dimension 1")
     ax.set_ylabel("Encoded dimension 2")
+
+    fig.savefig(filename.with_suffix(".png"))
