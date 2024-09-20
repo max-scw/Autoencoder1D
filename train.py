@@ -22,7 +22,7 @@ from data.data import create_dataset
 
 def get_device(device_str: str) -> torch.device:
     cuda = torch.cuda.is_available() and device_str.lower() != "cpu"
-    return torch.device(f"cuda:{int(opt.device)}" if cuda else "cpu")
+    return torch.device(f"cuda:{int(device_str)}" if cuda else "cpu")
 
 def train(
     model: nn.Module,
