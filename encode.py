@@ -10,7 +10,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from models import Conv1DAutoencoder
-from utils.data import create_dataset
+from utils import create_dataset
 from train import get_device
 
 
@@ -18,6 +18,8 @@ if __name__ == "__main__":
     parser = ArgumentParser()
 
     parser.add_argument('--data', type=str, help="Path a file that lists all training data")
+    parser.add_argument("--signal-len", type=int, default=2 ** 16,
+                        help="Maximum length to which a signal is padded or cropped it is longer")
 
     parser.add_argument("--weights", type=str, help="Path to model weights")
     parser.add_argument("--batch-size", type=int, default=16, help="Total batch size (for all GPUs)")
