@@ -17,7 +17,7 @@ import logging
 from typing import Tuple, List, Dict, Any
 
 from models import Conv1DAutoencoder
-from data.data import create_dataset
+from utils.data import create_dataset
 
 
 def get_device(device_str: str) -> torch.device:

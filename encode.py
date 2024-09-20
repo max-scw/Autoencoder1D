@@ -10,7 +10,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from models import Conv1DAutoencoder
-from data.data import create_dataset
+from utils.data import create_dataset
 from train import get_device
 
 
