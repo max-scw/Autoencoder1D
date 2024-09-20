@@ -14,6 +14,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from timeit import default_timer
 import copy
+import os
 import logging
 
 from typing import Union, Tuple, List, Dict, Any
@@ -154,6 +155,9 @@ if __name__ == "__main__":
         from setproctitle import setproctitle
         setproctitle(opt.process_title)
 
+    cuda = torch.cuda.is_available() and opt.device.lower() != 'cpu'
+    device = torch.device('cuda:0' if cuda else 'cpu')
+
     logger.debug(opt)
     # # create data
     # sensor_data = np.random.randn(1000, 5, 256)  # Example data
@@ -197,7 +201,7 @@ if __name__ == "__main__":
         n_epochs=opt.epochs,
         criterion=criterion,
         optimizer=optimizer,
-        device=opt.device,
+        device=device,
     )
 
     df = pd.DataFrame(hist)
