@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 
@@ -9,6 +10,7 @@ class Conv1DAutoencoder(nn.Module):
             n_depth: int = 3,
             n_channels_out_0: int = 16,
             stride: int = 2,
+            device: torch.device = torch.device("cpu"),
     ):
         super().__init__()
 
@@ -33,7 +35,14 @@ class Conv1DAutoencoder(nn.Module):
             # add one block
             layers += [
                 # convolution layer
-                nn.Conv1d(in_channels=in_channels, out_channels=out_channels, kernel_size=3, stride=stride, padding=1),
+                nn.Conv1d(
+                    in_channels=in_channels,
+                    out_channels=out_channels,
+                    kernel_size=3,
+                    stride=stride,
+                    padding=1,
+                    device=device
+                ),
                 # activation function
                 nn.ReLU()
             ]
@@ -77,7 +86,8 @@ class Conv1DAutoencoder(nn.Module):
                     kernel_size=3,
                     stride=stride,
                     padding=1,
-                    output_padding=1
+                    output_padding=1,
+                    device=device
                 ),
                 activation_fnc,
             ]

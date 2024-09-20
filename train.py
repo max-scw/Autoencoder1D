@@ -31,7 +31,7 @@ def train(
     dataloader_validation: DataLoader = None,
     criterion: nn.Module = nn.CrossEntropyLoss(),
     optimizer=None,
-    device: Union[str, int] = "cpu",
+    device: torch.device = torch.device("cpu"),
 ) -> Tuple[nn.Module, List[Dict[str, Any]]]:
     """
     Trains a PyTorch model
@@ -155,8 +155,8 @@ if __name__ == "__main__":
         from setproctitle import setproctitle
         setproctitle(opt.process_title)
 
-    cuda = torch.cuda.is_available() and opt.device.lower() != 'cpu'
-    device = torch.device('cuda:0' if cuda else 'cpu')
+    cuda = torch.cuda.is_available() and opt.device.lower() != "cpu"
+    device = torch.device(f"cuda:{int(opt.device)}" if cuda else "cpu")
 
     logger.debug(opt)
     # # create data
