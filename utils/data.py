@@ -4,8 +4,8 @@ from pathlib import Path
 
 from typing import Union
 
-from data.DatasetCSV import DatasetCSV
-from data.DatasetParquet import DatasetParquet
+from utils.DatasetCSV import DatasetCSV
+from utils.DatasetParquet import DatasetParquet
 
 
 class DatasetSensor(Dataset):
