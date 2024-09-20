@@ -189,7 +189,7 @@ if __name__ == "__main__":
     dataloader = DataLoader(dataset, batch_size=opt.batch_size, shuffle=True, num_workers=opt.workers)
 
     # Initialize the model, define the loss function and the optimizer
-    autoencoder = Conv1DAutoencoder(n_channels=data_shape[0], len_sig=data_shape[1])
+    autoencoder = Conv1DAutoencoder(n_channels=data_shape[0], len_sig=data_shape[1]).to(device)
     criterion = nn.MSELoss()
     optimizer = Adam(autoencoder.parameters(), lr=0.001)
 
