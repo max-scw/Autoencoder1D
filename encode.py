@@ -32,12 +32,12 @@ if __name__ == "__main__":
     opt = parser.parse_args()
 
     # Setup logging
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-    # create file wide logger
-    logger = logging.getLogger(__name__)
+    # logging.basicConfig(
+    #     level=logging.DEBUG,
+    #     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    # )
+    # # create file wide logger
+    # logger = logging.getLogger(__name__)
 
     device = get_device(opt.device)
     path_to_weights = Path(opt.weights)
@@ -88,6 +88,6 @@ if __name__ == "__main__":
     # plot results
     fig, ax = plt.subplots()
     ax.plot(encoded_data[:, 0], encoded_data[:, 1])
-    ax.title(f"{path_to_weights.stem}: {path_to_data.name} ({len(dataset)} points)")
-    ax.xlabel("Encoded dimension 1")
-    ax.ylabel("Encoded dimension 2")
+    ax.set_title(f"{path_to_weights.stem}: {path_to_data.name} ({len(dataset)} points)")
+    ax.set_xlabel("Encoded dimension 1")
+    ax.set_ylabel("Encoded dimension 2")
