@@ -1,5 +1,5 @@
 import pandas as pd
-
+import numpy as np
 
 class OnlineStats:
     def __init__(self):
@@ -8,6 +8,7 @@ class OnlineStats:
         self.m2 = 0.0     # Sum of squares of differences from the mean
         self.min = 9e9
         self.max = -9e9
+        self.signal_len = 0
 
     def add_signal(self, signal: pd.Series):
         """Add a new signal (pandas Series) and update the global mean and variance."""
@@ -16,6 +17,8 @@ class OnlineStats:
                 self.add_data_point(x)
             except Exception as ex:
                 raise ex
+        # length
+        self.signal_len = max(self.signal_len, len(signal))
 
     def add_data_point(self, x):
         """Add a new data point and update the mean and standard deviation."""
@@ -30,6 +33,7 @@ class OnlineStats:
         elif x < self.min:
             self.min = x
 
+
     @property
     def variance(self) -> float:
         """Return the current variance."""
@@ -43,6 +47,26 @@ class OnlineStats:
     @property
     def std(self) -> float:
         return self.standard_deviation
+
+
+def normalize_df(df: pd.DataFrame, mean: pd.Series, std: pd.Series) -> pd.DataFrame:
+    # identify variables that exhibit no variance
+    lg = std != 0
+    # variables to ignore
+    variables_to_ignore = np.array(df.columns)[np.invert(lg)].tolist()
+    # crop and scale
+    return (df.loc[:, lg] - mean[lg]) / std[lg]
+
+
+def zero_pad_df(df: pd.DataFrame, signal_len: int) -> pd.DataFrame:
+    n_padding = signal_len - df.shape[0]
+    if n_padding > 0:
+        # create a DataFrame with zeros for padding
+        zero_padding = pd.DataFrame(np.zeros((n_padding, df.shape[1])), columns=df.columns)
+        # concatenate the original DataFrame with the zero-padding
+        return pd.concat([df, zero_padding], ignore_index=True)
+    else:
+        return df[:signal_len]
 
 
 if __name__ == '__main__':

@@ -14,11 +14,13 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from timeit import default_timer
 import copy
+import logging
 
 from typing import Union, Tuple, List, Dict, Any
 
 from models import Conv1DAutoencoder
-from data import SensorDataset, DatasetCSV
+from data import DatasetSensor, DatasetCSV
+from DatasetParquet import DatasetParquet
 
 
 def train(
@@ -140,29 +142,42 @@ if __name__ == "__main__":
 
     opt = parser.parse_args()
 
+    # Setup logging
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    # create file wide logger
+    logger = logging.getLogger(__name__)
+
     if opt.process_title:
         from setproctitle import setproctitle
         setproctitle(opt.process_title)
 
-    # opt.epochs = 5
-    # opt.batch_size = 4
-    # opt.workers = 2
-    # opt.signal_len = 2**16
-    # opt.data = r"../CaptureDataParser/data/Testfiles.txt"
-
+    logger.debug(opt)
     # # create data
     # sensor_data = np.random.randn(1000, 5, 256)  # Example data
     # # Convert to PyTorch tensor
     # sensor_data = torch.tensor(sensor_data, dtype=torch.float32)
     # # Create Dataset
     # dataset = SensorDataset(sensor_data)
-
-    # read from files
-    dataset = DatasetCSV(
-        info_file=opt.data,
-        signal_len=opt.signal_len,
-        normalize=True
-    )
+    data_file = Path(opt.data)
+    if data_file.suffix == ".parquet":
+        logger.debug(f"Parquet file found {data_file}. Using DatasetParquet().")
+        dataset = DatasetParquet(
+            file=data_file,
+            groupby="name",
+            normalize=True,
+            signal_len=opt.signal_len,
+        )
+    else:
+        logger.debug(f"Using DatasetCSV() for file {data_file}.")
+        # read from files
+        dataset = DatasetCSV(
+            info_file=data_file,
+            signal_len=opt.signal_len,
+            normalize=True
+        )
     # get one datapoint to adjust the autoencoder according to the data shape
     data_shape = dataset[0].shape
 

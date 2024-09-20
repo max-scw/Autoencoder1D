@@ -1,4 +1,3 @@
-import torch
 from torch.utils.data import DataLoader, Dataset
 import numpy as np
 
@@ -8,10 +7,10 @@ import pandas as pd
 
 from typing import Union
 
-from utils import OnlineStats
+from utils import OnlineStats, normalize_df, zero_pad_df
 
 
-class SensorDataset(Dataset):
+class DatasetSensor(Dataset):
     def __init__(self, data) -> None:
         # Add channel dimension (batch_size, 1, num_features)
         self.data = data.unsqueeze(1) if len(data.shape) < 3 else data
@@ -35,7 +34,7 @@ class DatasetCSV(Dataset):
     ) -> None:
         super().__init__()
         self.__kwargs_pandas_read_csv = kwargs
-        self.__signal_len = signal_len
+        self._signal_len = signal_len
 
         if isinstance(info_file, str):
             info_file = Path(info_file)
@@ -91,24 +90,12 @@ class DatasetCSV(Dataset):
 
         # normalize (z-normalization)
         if (self.mean is not None) and (self.std is not None):
-            # identify variables that exhibit no variance
-            lg = self.std != 0
-            # variables to ignore
-            self.variables_to_ignore = np.array(df.columns)[np.invert(lg)].tolist()
-            # crop and scale
-            df = (df.loc[:, lg] - self.mean[lg]) / self.std[lg]
+            df = normalize_df(df, self.mean, self.std)
 
         # zero-padding if necessary
-        n_padding = self.__signal_len - df.shape[0]
-        if n_padding > 0:
-            # create a DataFrame with zeros for padding
-            zero_padding = pd.DataFrame(np.zeros((n_padding, df.shape[1])), columns=df.columns)
-            # concatenate the original DataFrame with the zero-padding
-            df_ = pd.concat([df, zero_padding], ignore_index=True)
-        else:
-            df_ = df[:self.__signal_len]
+        df = zero_pad_df(df, self._signal_len)
 
-        return df_.to_numpy().transpose().astype(np.float32)  # expecting shape to be (n_channles, len_signal)
+        return df.to_numpy().transpose().astype(np.float32)  # expecting shape to be (n_channels, len_signal)
 
 
 
