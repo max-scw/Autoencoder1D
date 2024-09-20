@@ -89,7 +89,7 @@ if __name__ == '__main__':
     # Create Dataset and DataLoader
     # dataset = SensorDataset(sensor_data)
     dataset = DatasetParquet(
-        file=r"../SmartSchaKu/Daten_SmartSchaKu_DB_Leipzig_V01_05_500_name.parquet",
+        file=r"../../SmartSchaKu/Daten_SmartSchaKu_DB_Leipzig_V01_05_500_name.parquet",
         groupby="name",
         normalize=True
     )

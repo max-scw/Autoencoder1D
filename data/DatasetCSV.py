@@ -5,21 +5,9 @@ from pathlib import Path
 from tqdm import tqdm
 import pandas as pd
 
-from typing import Union
-
 from utils import OnlineStats, normalize_df, zero_pad_df
 
-
-class DatasetSensor(Dataset):
-    def __init__(self, data) -> None:
-        # Add channel dimension (batch_size, 1, num_features)
-        self.data = data.unsqueeze(1) if len(data.shape) < 3 else data
-
-    def __len__(self) -> int:
-        return len(self.data)
-
-    def __getitem__(self, idx):
-        return self.data[idx]
+from typing import Union, List
 
 
 class DatasetCSV(Dataset):
@@ -97,22 +85,17 @@ class DatasetCSV(Dataset):
 
         return df.to_numpy().transpose().astype(np.float32)  # expecting shape to be (n_channels, len_signal)
 
-
-
 if __name__ == '__main__':
-    # # Assuming sensor_data is a NumPy array of shape (num_samples, num_features)
-    # sensor_data = np.random.randn(1000, 3, 128)  # Example data
-    #
-    # # Convert to PyTorch tensor
-    # sensor_data = torch.tensor(sensor_data, dtype=torch.float32)
 
     # Create Dataset and DataLoader
     # dataset = SensorDataset(sensor_data)
-    dataset = DatasetCSV(info_file=r"../CaptureDataParser/data/Testfiles.txt", signal_len=2**16)
+    dataset = DatasetCSV(
+        info_file=r"../CaptureDataParser/data/Testfiles.txt",
+        signal_len=2**16
+    )
+
     dataloader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=1)
 
     for element in dataloader:
         print(element.shape)
         break
-
-

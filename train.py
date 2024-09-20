@@ -3,26 +3,26 @@ from argparse import ArgumentParser
 import torch
 import torch.nn as nn
 # dataset
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
 # optimizer
 from torch.optim import Adam
 
-import numpy as np
 import pandas as pd
-from tqdm import trange, tqdm
-from pathlib import Path
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 from timeit import default_timer
 import copy
-import os
 import logging
 
-from typing import Union, Tuple, List, Dict, Any
+from typing import Tuple, List, Dict, Any
 
 from models import Conv1DAutoencoder
-from data import DatasetSensor, DatasetCSV
-from DatasetParquet import DatasetParquet
+from data.data import create_dataset
 
+
+def get_device(device_str: str) -> torch.device:
+    cuda = torch.cuda.is_available() and device_str.lower() != "cpu"
+    return torch.device(f"cuda:{int(opt.device)}" if cuda else "cpu")
 
 def train(
     model: nn.Module,
@@ -155,8 +155,7 @@ if __name__ == "__main__":
         from setproctitle import setproctitle
         setproctitle(opt.process_title)
 
-    cuda = torch.cuda.is_available() and opt.device.lower() != "cpu"
-    device = torch.device(f"cuda:{int(opt.device)}" if cuda else "cpu")
+    device = get_device(opt.device)
 
     logger.debug(opt)
     # # create data
@@ -165,23 +164,8 @@ if __name__ == "__main__":
     # sensor_data = torch.tensor(sensor_data, dtype=torch.float32)
     # # Create Dataset
     # dataset = SensorDataset(sensor_data)
-    data_file = Path(opt.data)
-    if data_file.suffix == ".parquet":
-        logger.debug(f"Parquet file found {data_file}. Using DatasetParquet().")
-        dataset = DatasetParquet(
-            file=data_file,
-            groupby="name",
-            normalize=True,
-            signal_len=opt.signal_len,
-        )
-    else:
-        logger.debug(f"Using DatasetCSV() for file {data_file}.")
-        # read from files
-        dataset = DatasetCSV(
-            info_file=data_file,
-            signal_len=opt.signal_len,
-            normalize=True
-        )
+
+    dataset = create_dataset(opt.data, opt.signal_len)
     # get one datapoint to adjust the autoencoder according to the data shape
     data_shape = dataset[0].shape
 
