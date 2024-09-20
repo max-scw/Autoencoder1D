@@ -190,13 +190,14 @@ if __name__ == "__main__":
     optimizer = Adam(autoencoder.parameters(), lr=0.001)
 
     # Training loop
+    logger.debug("Start training. ")
     autoencoder, hist = train(
         autoencoder,
         dataloader_training=dataloader,
         n_epochs=opt.epochs,
         criterion=criterion,
         optimizer=optimizer,
-        device="cpu"
+        device=opt.device,
     )
 
     df = pd.DataFrame(hist)
