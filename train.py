@@ -167,7 +167,7 @@ if __name__ == "__main__":
     # # Create Dataset
     # dataset = SensorDataset(sensor_data)
 
-    dataset = create_dataset(opt.data, opt.signal_len)
+    dataset = create_dataset(opt.data, opt.signal_len, normalize_data=opt.normalize)
     # get one datapoint to adjust the autoencoder according to the data shape
     data_shape = dataset[0].shape
 
