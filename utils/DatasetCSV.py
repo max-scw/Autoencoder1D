@@ -18,6 +18,7 @@ class DatasetCSV(Dataset):
             info_file: Union[str, Path],
             signal_len: int,
             normalize: bool = False,
+            ignore_idxs: List[int] = None
             **kwargs
     ) -> None:
         super().__init__()
@@ -36,6 +37,10 @@ class DatasetCSV(Dataset):
         with open(info_file, "r") as fid:
             lines = fid.readlines()
         files = [Path(el.strip()) for el in lines if len(el) > 5]
+
+        # filter data
+        ignore_idxs = ignore_idxs if isinstance(ignore_idxs, list) else []
+        files = [df for i, df in enumerate(files) if i not in ignore_idxs]
 
         # check files
         self.files = []

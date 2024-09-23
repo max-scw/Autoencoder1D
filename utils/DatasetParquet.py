@@ -43,10 +43,16 @@ class DatasetParquet(Dataset):
             groupby=None,
             signal_len: int = None,
             normalize: bool = False,
+            ignore_idxs: List[int] = None
     ) -> None:
         super().__init__()
 
-        self.data = load_from_parquet(file=file, groupby=groupby)
+        # bulk load data from file
+        data_ = load_from_parquet(file=file, groupby=groupby)
+        # filter data
+        ignore_idxs = ignore_idxs if isinstance(ignore_idxs, list) else []
+        self.data = [df for i, df in enumerate(data_) if i not in ignore_idxs]
+
         self._signal_len = signal_len
 
         # normalize (numeric) data

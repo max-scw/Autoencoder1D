@@ -137,6 +137,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch-size", type=int, default=16, help="Total batch size (for all GPUs)")
     parser.add_argument("--normalize", action="store_true",
                         help="Applies z-standardization on the input data before feeding it to the autoencoder")
+    parser.add_argument("--ignore-idxs", type=int, nargs="+", default=None, help="Indices of files to ignore")
 
     parser.add_argument("--workers", type=int, default=2, help="Maximum number of dataloader workers")
     parser.add_argument("--device", default="cpu", help="Cuda device, i.e. 0 or 0,1,2,3, or cpu")
@@ -167,7 +168,12 @@ if __name__ == "__main__":
     # # Create Dataset
     # dataset = SensorDataset(sensor_data)
 
-    dataset = create_dataset(opt.data, opt.signal_len, normalize_data=opt.normalize)
+    dataset = create_dataset(
+        opt.data,
+        opt.signal_len,
+        normalize_data=opt.normalize,
+        ignore_idxs=opt.ignore_idxs
+    )
     # get one datapoint to adjust the autoencoder according to the data shape
     data_shape = dataset[0].shape
 

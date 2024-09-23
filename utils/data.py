@@ -2,7 +2,7 @@ from torch.utils.data import  Dataset
 
 from pathlib import Path
 
-from typing import Union
+from typing import Union, List
 
 from utils.DatasetCSV import DatasetCSV
 from utils.DatasetParquet import DatasetParquet
@@ -26,22 +26,26 @@ def create_dataset(
         path_to_data: Union[str, Path],
         signal_len: int,
         normalize_data: bool = True,
+        ignore_idxs: List[int] = None
 ) -> Union[DatasetCSV, DatasetParquet]:
     data_file = Path(path_to_data)
 
+    kwargs = {
+        "normalize": normalize_data,
+        "signal_len": signal_len,
+        "ignore_idxs": ignore_idxs
+    }
     if data_file.suffix == ".parquet":
         dataset = DatasetParquet(
             file=data_file,
             groupby="name",
-            normalize=normalize_data,
-            signal_len=signal_len,
+            **kwargs
         )
     else:
         # read from files
         dataset = DatasetCSV(
             info_file=data_file,
-            signal_len=signal_len,
-            normalize=normalize_data
+            **kwargs
         )
 
     return dataset
