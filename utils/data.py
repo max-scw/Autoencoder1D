@@ -24,7 +24,8 @@ class DatasetSensor(Dataset):
 
 def create_dataset(
         path_to_data: Union[str, Path],
-        signal_len: int
+        signal_len: int,
+        normalize_data: bool = True,
 ) -> Union[DatasetCSV, DatasetParquet]:
     data_file = Path(path_to_data)
 
@@ -32,7 +33,7 @@ def create_dataset(
         dataset = DatasetParquet(
             file=data_file,
             groupby="name",
-            normalize=True,
+            normalize=normalize_data,
             signal_len=signal_len,
         )
     else:
@@ -40,7 +41,7 @@ def create_dataset(
         dataset = DatasetCSV(
             info_file=data_file,
             signal_len=signal_len,
-            normalize=True
+            normalize=normalize_data
         )
 
     return dataset

@@ -135,6 +135,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--epochs", type=int, default=5, help="Number of training epochs")
     parser.add_argument("--batch-size", type=int, default=16, help="Total batch size (for all GPUs)")
+    parser.add_argument("--normalize", action="store_true",
+                        help="Applies z-standardization on the input data before feeding it to the autoencoder")
 
     parser.add_argument("--workers", type=int, default=2, help="Maximum number of dataloader workers")
     parser.add_argument("--device", default="cpu", help="Cuda device, i.e. 0 or 0,1,2,3, or cpu")

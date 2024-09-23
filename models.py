@@ -41,6 +41,8 @@ class Conv1DAutoencoder(nn.Module):
                     stride=stride,
                     padding=1
                 ),
+                # normalization
+                nn.BatchNorm1d(out_channels),
                 # activation function
                 nn.ReLU()
             ]
