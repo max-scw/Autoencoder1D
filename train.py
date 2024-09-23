@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from timeit import default_timer
 import copy
 import logging
+from datetime import datetime
 
 from typing import Tuple, List, Dict, Any
 
@@ -200,4 +201,4 @@ if __name__ == "__main__":
     df.plot(xlabel="Epoch", ylabel="MSE Loss", title="Training Loss")
 
     plt.savefig("Autoencoder_TrainingLoss.png")
-    torch.save(autoencoder.state_dict(), r"autoencoder.pt")
+    torch.save(autoencoder.state_dict(), f"{datetime.now().strftime('%Y%m%d-%H%M')}_autoencoder.pt")
