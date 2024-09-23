@@ -7,11 +7,34 @@ from tqdm import tqdm
 import logging
 
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
+
 
 from models import Conv1DAutoencoder
 from utils import create_dataset
 from train import get_device
+
+
+def calculate_rms_energy(tensor: torch.Tensor) -> torch.Tensor:
+    """
+    Calculate the root-mean-square energy for each batch in a tensor.
+
+    Args:
+        tensor (torch.Tensor): A tensor of size [batch_size, n_channels, length]
+
+    Returns:
+        torch.Tensor: A tensor of size [batch_size] containing the RMS energy for each batch
+    """
+    # Calculate the square of the tensor
+    squared_tensor = tensor ** 2
+    # Calculate the mean of the squared tensor along the last two dimensions (n_channels and length)
+    mean_squared_tensor = torch.mean(squared_tensor, dim=(1, 2))
+
+    # Calculate the square root of the mean squared tensor
+    rms_energy = torch.sqrt(mean_squared_tensor)
+
+    return rms_energy
 
 
 if __name__ == "__main__":
@@ -68,7 +91,7 @@ if __name__ == "__main__":
     model = autoencoder.encoder
 
     model.eval()
-    encoded = []
+    encoded, energy = [], []
     for x in tqdm(dataloader, desc=f"Encoding data"):
 
         if isinstance(x, tuple) and len(x) == 2:
@@ -80,17 +103,23 @@ if __name__ == "__main__":
         with torch.no_grad():
             output = model(inputs)
         encoded += output.tolist()
+        # calculate the energy (rms-value) of the signals
+        energy += calculate_rms_energy(x)
 
     encoded_data = np.array(encoded)
+    energy_data = np.array(energy)
+
+
+    if isinstance(dataset.data[0], pd.DataFrame) and hasattr(dataset.data[0], "name"):
+        # reconstruct names
+        names = [el.name for el in dataset.data]
+    else:
+        names = None
+
+    # create pandas.DataFrame object from encoded dimensions + energy value
+    columns = list(range(1, encoded_data.shape[1] + 1)) + ["energy"]
+    df = pd.DataFrame(np.hstack((encoded_data, energy_data.reshape(-1, 1))), index=names, columns=columns)
+
     # save results
     filename = Path(f"{path_to_weights.stem}_{path_to_data.stem}.csv")
-    np.savetxt(filename, encoded_data, delimiter=",")
-
-    # plot results
-    fig, ax = plt.subplots()
-    ax.scatter(encoded_data[:, 0], encoded_data[:, 1], s=10, alpha=0.5, picker=True)
-    ax.set_title(f"{path_to_weights.stem}: {path_to_data.name} ({len(dataset)} points)")
-    ax.set_xlabel("Encoded dimension 1")
-    ax.set_ylabel("Encoded dimension 2")
-
-    fig.savefig(filename.with_suffix(".png"))
+    df.to_csv(filename)
