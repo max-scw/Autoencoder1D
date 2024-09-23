@@ -18,7 +18,7 @@ class DatasetCSV(Dataset):
             info_file: Union[str, Path],
             signal_len: int,
             normalize: bool = False,
-            ignore_idxs: List[int] = None
+            ignore_idxs: List[int] = None,
             **kwargs
     ) -> None:
         super().__init__()
