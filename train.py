@@ -133,6 +133,8 @@ if __name__ == "__main__":
     parser.add_argument('--data', type=str, help="Path a file that lists all training data")
     parser.add_argument("--signal-len", type=int, default=2 ** 16,
                         help="Maximum length to which a signal is padded or cropped it is longer")
+    parser.add_argument("--depth", type=int, default=5,
+                        help="Number of convolution layers of the encoder.")
 
     parser.add_argument("--epochs", type=int, default=5, help="Number of training epochs")
     parser.add_argument("--batch-size", type=int, default=16, help="Total batch size (for all GPUs)")
@@ -149,7 +151,7 @@ if __name__ == "__main__":
 
     # Setup logging
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
     # create file wide logger
@@ -182,7 +184,11 @@ if __name__ == "__main__":
     dataloader = DataLoader(dataset, batch_size=opt.batch_size, shuffle=True, num_workers=opt.workers)
 
     # Initialize the model, define the loss function and the optimizer
-    autoencoder = Conv1DAutoencoder(n_channels=data_shape[0], len_sig=data_shape[1]).to(device)
+    autoencoder = Conv1DAutoencoder(
+        n_channels=data_shape[0],
+        len_sig=data_shape[1],
+        n_depth=opt.depth
+    ).to(device)
     criterion = nn.MSELoss()
     optimizer = Adam(autoencoder.parameters(), lr=0.001)
 
