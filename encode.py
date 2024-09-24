@@ -43,6 +43,8 @@ if __name__ == "__main__":
     parser.add_argument('--data', type=str, help="Path a file that lists all training data")
     parser.add_argument("--signal-len", type=int, default=2 ** 16,
                         help="Maximum length to which a signal is padded or cropped it is longer")
+    parser.add_argument("--depth", type=int, default=5,
+                        help="Number of convolution layers of the encoder.")
 
     parser.add_argument("--weights", type=str, help="Path to model weights")
     parser.add_argument("--batch-size", type=int, default=16, help="Total batch size (for all GPUs)")
@@ -88,7 +90,8 @@ if __name__ == "__main__":
     # Initialize the model, define the loss function and the optimizer
     autoencoder = Conv1DAutoencoder(
         n_channels=data_shape[0],
-        len_sig=data_shape[1]
+        len_sig=data_shape[1],
+        n_depth=opt.depth
     ).to(device)
 
     # Load the weights from a file
