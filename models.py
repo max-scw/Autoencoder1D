@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-
+# TODO: add number of target dimensions. default: 2
 class Conv1DAutoencoder(nn.Module):
     def __init__(
             self,
@@ -44,7 +44,9 @@ class Conv1DAutoencoder(nn.Module):
                 # normalization
                 nn.BatchNorm1d(out_channels),
                 # activation function
-                nn.ReLU()
+                nn.ReLU(),
+                # pooling
+                # nn.MaxPool1d(kernel_size=2),
             ]
             # update variables
             in_channels = out_channels
@@ -80,6 +82,8 @@ class Conv1DAutoencoder(nn.Module):
                 out_channels //= 2
 
             layers += [
+                # nn.Upsample(scale_factor=2),
+                # convolution
                 nn.ConvTranspose1d(
                     in_channels=in_channels,
                     out_channels=out_channels,
@@ -88,6 +92,9 @@ class Conv1DAutoencoder(nn.Module):
                     padding=1,
                     output_padding=1
                 ),
+                # batch normalization
+                nn.BatchNorm1d(out_channels),
+                # activation function
                 activation_fnc,
             ]
             # update variables
