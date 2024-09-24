@@ -68,7 +68,7 @@ if __name__ == "__main__":
     # logger = logging.getLogger(__name__)
 
     device = get_device(opt.device)
-    path_to_weights = Path(opt.weights)
+    path_to_checkpoint = Path(opt.checkpoint)
     path_to_data = Path(opt.data)
 
     # load model
@@ -121,5 +121,5 @@ if __name__ == "__main__":
     df = pd.DataFrame(np.hstack((encoded_data, energy_data.reshape(-1, 1))), index=names, columns=columns)
 
     # save results
-    filename = Path(f"{path_to_weights.stem}_{path_to_data.stem}.csv")
+    filename = Path(f"{path_to_checkpoint.stem}_{path_to_data.stem}.csv")
     df.to_csv(filename)
