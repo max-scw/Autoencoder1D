@@ -17,7 +17,7 @@ def save_autoencoder(model: Conv1DAutoencoder, filename: Union[str, Path], data 
     checkpoint = {
         "state_dict": model.state_dict(),
         "model_args": {
-            ky: model[ky] for ky in ["n_channels", "n_depth", "stride", "len_sig", "n_channels_out_0"]
+            ky: getattr(model, ky) for ky in ["n_channels", "n_depth", "stride", "len_sig", "n_channels_out_0"]
         },
         "data_args": {
             "sig_mean": data.mean if hasattr(data, "mean") else None,
