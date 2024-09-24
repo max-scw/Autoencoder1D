@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 
 
 from models import Conv1DAutoencoder
-from utils import create_dataset
+from utils import create_dataset, load_autoencoder
 from train import get_device
 
 
@@ -41,15 +41,15 @@ if __name__ == "__main__":
     parser = ArgumentParser()
 
     parser.add_argument('--data', type=str, help="Path a file that lists all training data")
-    parser.add_argument("--signal-len", type=int, default=2 ** 16,
-                        help="Maximum length to which a signal is padded or cropped it is longer")
-    parser.add_argument("--depth", type=int, default=5,
-                        help="Number of convolution layers of the encoder.")
+    # parser.add_argument("--signal-len", type=int, default=2 ** 16,
+    #                     help="Maximum length to which a signal is padded or cropped it is longer")
+    # parser.add_argument("--depth", type=int, default=5,
+    #                     help="Number of convolution layers of the encoder.")
 
-    parser.add_argument("--weights", type=str, help="Path to model weights")
+    parser.add_argument("--checkpoint", type=str, help="Path to model weights")
     parser.add_argument("--batch-size", type=int, default=16, help="Total batch size (for all GPUs)")
-    parser.add_argument("--normalize", action="store_true",
-                        help="Applies z-standardization on the input data before feeding it to the autoencoder")
+    # parser.add_argument("--normalize", action="store_true",
+    #                     help="Applies z-standardization on the input data before feeding it to the autoencoder")
     parser.add_argument("--ignore-idxs", type=int, nargs="+", default=None, help="Indices of files to ignore")
 
     parser.add_argument("--workers", type=int, default=2, help="Maximum number of dataloader workers")
@@ -71,10 +71,13 @@ if __name__ == "__main__":
     path_to_weights = Path(opt.weights)
     path_to_data = Path(opt.data)
 
+    # load model
+    model, kwargs = load_autoencoder(opt.checkpoint)
+    model = model.to(device)
+
     dataset = create_dataset(
         opt.data,
-        opt.signal_len,
-        normalize_data=opt.normalize,
+        **kwargs,
         ignore_idxs=opt.ignore_idxs
     )
     # get one datapoint to adjust the autoencoder according to the data shape
@@ -86,20 +89,6 @@ if __name__ == "__main__":
         shuffle=False,
         num_workers=opt.workers
     )
-
-    # Initialize the model, define the loss function and the optimizer
-    autoencoder = Conv1DAutoencoder(
-        n_channels=data_shape[0],
-        len_sig=data_shape[1],
-        n_depth=opt.depth
-    ).to(device)
-
-    # Load the weights from a file
-    checkpoint = torch.load(path_to_weights, map_location=device, weights_only=True)
-    autoencoder.load_state_dict(checkpoint)
-
-    # Make sure the model is in evaluation mode
-    model = autoencoder.encoder
 
     model.eval()
     encoded, energy = [], []

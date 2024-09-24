@@ -5,7 +5,7 @@ from pathlib import Path
 from tqdm import tqdm
 import pandas as pd
 
-from .general import OnlineStats, normalize_df, zero_pad_df
+from .signals import OnlineStats, normalize_df, zero_pad_df
 
 from typing import Union, List
 

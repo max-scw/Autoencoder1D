@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 
+
 class OnlineStats:
     def __init__(self):
         self.n = 0        # Number of elements

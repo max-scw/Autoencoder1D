@@ -18,7 +18,7 @@ from datetime import datetime
 from typing import Tuple, List, Dict, Any
 
 from models import Conv1DAutoencoder
-from utils.data import create_dataset
+from utils import create_dataset, save_autoencoder
 
 
 def get_device(device_str: str) -> torch.device:
@@ -127,6 +127,9 @@ def train(
     return model, history
 
 
+
+
+
 if __name__ == "__main__":
     parser = ArgumentParser()
 
@@ -148,7 +151,14 @@ if __name__ == "__main__":
     parser.add_argument("--process-title", type=str, default=None, help="Names the process")
 
     opt = parser.parse_args()
-
+    opt.epochs = 5
+    opt.batch_size = 4
+    opt.workers = 2
+    # opt.signal_len = 2**16
+    # opt.data = r"../CaptureDataParser/data/Testfiles.txt"
+    opt.data = r"../SmartSchaKu/Daten_SmartSchaKu_DB_Leipzig_V01_05_500_name.parquet"
+    opt.signal_len = 11200
+    opt.normalize=True
     # Setup logging
     logging.basicConfig(
         level=logging.INFO,
@@ -207,4 +217,8 @@ if __name__ == "__main__":
     df.plot(xlabel="Epoch", ylabel="MSE Loss", title="Training Loss")
 
     plt.savefig("Autoencoder_TrainingLoss.png")
-    torch.save(autoencoder.state_dict(), f"{datetime.now().strftime('%Y%m%d-%H%M')}_autoencoder.pt")
+    save_autoencoder(
+        model=autoencoder,
+        filename=f"{datetime.now().strftime('%Y%m%d-%H%M')}_autoencoder",
+        data=dataset
+    )
