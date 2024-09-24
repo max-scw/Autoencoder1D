@@ -41,15 +41,10 @@ if __name__ == "__main__":
     parser = ArgumentParser()
 
     parser.add_argument('--data', type=str, help="Path a file that lists all training data")
-    # parser.add_argument("--signal-len", type=int, default=2 ** 16,
-    #                     help="Maximum length to which a signal is padded or cropped it is longer")
-    # parser.add_argument("--depth", type=int, default=5,
-    #                     help="Number of convolution layers of the encoder.")
 
     parser.add_argument("--checkpoint", type=str, help="Path to model weights")
     parser.add_argument("--batch-size", type=int, default=16, help="Total batch size (for all GPUs)")
-    # parser.add_argument("--normalize", action="store_true",
-    #                     help="Applies z-standardization on the input data before feeding it to the autoencoder")
+
     parser.add_argument("--ignore-idxs", type=int, nargs="+", default=None, help="Indices of files to ignore")
 
     parser.add_argument("--workers", type=int, default=2, help="Maximum number of dataloader workers")
@@ -72,8 +67,8 @@ if __name__ == "__main__":
     path_to_data = Path(opt.data)
 
     # load model
-    model, kwargs = load_autoencoder(opt.checkpoint)
-    model = model.to(device)
+    autoencoder, kwargs = load_autoencoder(opt.checkpoint)
+    model = autoencoder.encoder.to(device)
 
     dataset = create_dataset(
         opt.data,

@@ -34,7 +34,7 @@ def save_autoencoder(model: Conv1DAutoencoder, filename: Union[str, Path], data 
 
 def load_autoencoder(filename: Union[str, Path]) -> Tuple[Conv1DAutoencoder, dict]:
 
-    checkpoint = torch.load(filename)
+    checkpoint = torch.load(filename, map_location=torch.device("cpu"), weights_only=False)
 
     # Initialize the model, define the loss function and the optimizer
     model = Conv1DAutoencoder(**checkpoint["model_args"])
