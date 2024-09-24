@@ -12,6 +12,11 @@ class Conv1DAutoencoder(nn.Module):
             stride: int = 2
     ):
         super().__init__()
+        self.n_channels = n_channels
+        self.n_depth = n_depth
+        self.n_channels_out_0 = n_channels_out_0
+        self.stride = stride
+        self.len_sig = len_sig
 
         # Calculate the output size after the convolutional layers
         n_channels_out_max = n_channels_out_0 * 2**(n_depth - 1)
