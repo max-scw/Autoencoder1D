@@ -43,6 +43,8 @@ class DatasetParquet(Dataset):
             groupby=None,
             signal_len: int = None,
             normalize: bool = False,
+            mean: pd.Series = None,
+            std: pd.Series = None,
             ignore_idxs: List[int] = None
     ) -> None:
         super().__init__()
@@ -57,22 +59,25 @@ class DatasetParquet(Dataset):
 
         # normalize (numeric) data
         if normalize or (signal_len is None):
-            stats = dict()
-            _signal_len = 0
-            for df in tqdm(self.data, desc="Calculating statistics from files"):
-                # calculate statistics
-                for ky, vl in df.select_dtypes("number").items():
-                    if ky not in stats:
-                        stats[ky] = OnlineStats()
+            if (mean is None) or (std is None):
+                stats = dict()
+                _signal_len = 0
+                for df in tqdm(self.data, desc="Calculating statistics from files"):
                     # calculate statistics
-                    stats[ky].add_signal(vl)
-                # length
-                _signal_len = max(_signal_len, len(df))
+                    for ky, vl in df.select_dtypes("number").items():
+                        if ky not in stats:
+                            stats[ky] = OnlineStats()
+                        # calculate statistics
+                        stats[ky].add_signal(vl)
+                    # length
+                    _signal_len = max(_signal_len, len(df))
 
-            self.mean = pd.Series({ky: vl.mean for ky, vl in stats.items()})
-            self.std = pd.Series({ky: vl.std for ky, vl in stats.items()})
-            if signal_len is None:
-                self._signal_len = _signal_len
+                self.mean = pd.Series({ky: vl.mean for ky, vl in stats.items()})
+                self.std = pd.Series({ky: vl.std for ky, vl in stats.items()})
+                if signal_len is None:
+                    self._signal_len = _signal_len
+            else:
+                self.mean, self.std = mean, std
         else:
             self.mean, self.std = None, None
 

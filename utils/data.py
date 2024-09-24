@@ -1,5 +1,5 @@
 from torch.utils.data import  Dataset
-
+import pandas as pd
 from pathlib import Path
 
 from typing import Union, List
@@ -20,20 +20,22 @@ class DatasetSensor(Dataset):
         return self.data[idx]
 
 
-
-
 def create_dataset(
         path_to_data: Union[str, Path],
         signal_len: int,
         normalize_data: bool = True,
+        mean: pd.Series = None,
+        std: pd.Series = None,
         ignore_idxs: List[int] = None
 ) -> Union[DatasetCSV, DatasetParquet]:
     data_file = Path(path_to_data)
 
     kwargs = {
-        "normalize": normalize_data,
         "signal_len": signal_len,
-        "ignore_idxs": ignore_idxs
+        "normalize": normalize_data,
+        "mean": mean,
+        "std": std,
+        "ignore_idxs": ignore_idxs,
     }
     if data_file.suffix == ".parquet":
         dataset = DatasetParquet(

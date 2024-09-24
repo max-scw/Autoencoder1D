@@ -18,6 +18,8 @@ class DatasetCSV(Dataset):
             info_file: Union[str, Path],
             signal_len: int,
             normalize: bool = False,
+            mean: pd.Series = None,
+            std: pd.Series = None,
             ignore_idxs: List[int] = None,
             **kwargs
     ) -> None:
@@ -58,17 +60,20 @@ class DatasetCSV(Dataset):
 
         # normalize (numeric) data
         if normalize:
-            stats = dict()
-            for fl in tqdm(self.files, desc="Calculating statistics from files"):
-                # read file
-                df = pd.read_csv(fl, **self.__kwargs_pandas_read_csv)
-                # calculate statistics
-                for ky, vl in df.select_dtypes("number").items():
-                    if ky not in stats:
-                        stats[ky] = OnlineStats()
-                    stats[ky].add_signal(vl)
-            self.mean = pd.Series({ky: vl.mean for ky, vl in stats.items()})
-            self.std = pd.Series({ky: vl.std for ky, vl in stats.items()})
+            if (mean is None) or (std is None):
+                stats = dict()
+                for fl in tqdm(self.files, desc="Calculating statistics from files"):
+                    # read file
+                    df = pd.read_csv(fl, **self.__kwargs_pandas_read_csv)
+                    # calculate statistics
+                    for ky, vl in df.select_dtypes("number").items():
+                        if ky not in stats:
+                            stats[ky] = OnlineStats()
+                        stats[ky].add_signal(vl)
+                self.mean = pd.Series({ky: vl.mean for ky, vl in stats.items()})
+                self.std = pd.Series({ky: vl.std for ky, vl in stats.items()})
+            else:
+                self.mean, self.std = mean, std
         else:
             self.mean, self.std = None, None
 
