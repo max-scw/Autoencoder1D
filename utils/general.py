@@ -23,7 +23,7 @@ def save_autoencoder(model: Conv1DAutoencoder, filename: Union[str, Path], data 
             "sig_mean": data.mean if hasattr(data, "mean") else None,
             "sig_std": data.std if hasattr(data, "std") else None,
             "normalize_data": hasattr(data, "mean"),
-            "signal_len": model["len_sig"],
+            "signal_len": getattr(model, "len_sig"),
         }
     }
 
