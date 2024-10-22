@@ -14,11 +14,13 @@ from timeit import default_timer
 import copy
 import logging
 from datetime import datetime
+from pathlib import Path
 
-from typing import Tuple, List, Dict, Any
+from typing import Tuple, List, Dict, Any, Union
 
 from models import Conv1DAutoencoder
 from utils import create_dataset, save_autoencoder
+from utils import cast_logging_level, cast
 
 
 def get_device(device_str: str) -> torch.device:
@@ -144,21 +146,24 @@ if __name__ == "__main__":
     parser.add_argument("--normalize", action="store_true",
                         help="Applies z-standardization on the input data before feeding it to the autoencoder")
     parser.add_argument("--ignore-idxs", type=int, nargs="+", default=None, help="Indices of files to ignore")
+    parser.add_argument('--kwargs', nargs='*', help='Additional keyword arguments for the dataset')
 
     parser.add_argument("--workers", type=int, default=2, help="Maximum number of dataloader workers")
     parser.add_argument("--device", default="cpu", help="Cuda device, i.e. 0 or 0,1,2,3, or cpu")
 
     parser.add_argument("--process-title", type=str, default=None, help="Names the process")
+    parser.add_argument("--logging-level", type=str, default="INFO", help="Logging level")
 
     opt = parser.parse_args()
 
     # Setup logging
     logging.basicConfig(
-        level=logging.INFO,
+        level=cast_logging_level(opt.logging_level),
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
     # create file wide logger
     logger = logging.getLogger(__name__)
+    logger.debug(opt)
 
     if opt.process_title:
         from setproctitle import setproctitle
@@ -166,7 +171,12 @@ if __name__ == "__main__":
 
     device = get_device(opt.device)
 
-    logger.debug(opt)
+    kwargs = dict()
+    for arg in opt.kwargs:
+        key, value = arg.split("=", 1)
+
+        kwargs[key] = cast(value)
+
     # # create data
     # sensor_data = np.random.randn(1000, 5, 256)  # Example data
     # # Convert to PyTorch tensor
@@ -178,7 +188,8 @@ if __name__ == "__main__":
         opt.data,
         opt.signal_len,
         normalize_data=opt.normalize,
-        ignore_idxs=opt.ignore_idxs
+        ignore_idxs=opt.ignore_idxs,
+        **kwargs
     )
     # get one datapoint to adjust the autoencoder according to the data shape
     data_shape = dataset[0].shape
@@ -212,6 +223,6 @@ if __name__ == "__main__":
     plt.savefig("Autoencoder_TrainingLoss.png")
     save_autoencoder(
         model=autoencoder,
-        filename=f"{datetime.now().strftime('%Y%m%d-%H%M')}_autoencoder",
+        filename=f"{datetime.now().strftime('%Y%m%d-%H%M')}_autoencoder_{Path(opt.data).stem}",
         data=dataset
     )

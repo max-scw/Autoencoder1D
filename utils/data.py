@@ -26,28 +26,30 @@ def create_dataset(
         normalize_data: bool = True,
         mean: pd.Series = None,
         std: pd.Series = None,
-        ignore_idxs: List[int] = None
+        ignore_idxs: List[int] = None,
+        **kwargs
 ) -> Union[DatasetCSV, DatasetParquet]:
     data_file = Path(path_to_data)
 
-    kwargs = {
+    _kwargs = {
         "signal_len": signal_len,
         "normalize": normalize_data,
         "mean": mean,
         "std": std,
         "ignore_idxs": ignore_idxs,
+        **kwargs
     }
     if data_file.suffix == ".parquet":
         dataset = DatasetParquet(
             file=data_file,
             groupby="name",
-            **kwargs
+            **_kwargs
         )
     else:
         # read from files
         dataset = DatasetCSV(
             info_file=data_file,
-            **kwargs
+            **_kwargs
         )
 
     return dataset
