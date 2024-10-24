@@ -53,14 +53,22 @@ class OnlineStats:
 
 
 def normalize_df(df: pd.DataFrame, mean: pd.Series, std: pd.Series) -> pd.DataFrame:
+    assert len(mean) == len(std), ValueError(f"Mean and std must be the same length.")
+    if isinstance(mean, pd.Series):
+        assert mean.index == std.index
+        columns = mean.index
+        df_ = df[columns]
+    else:
+        df_ = df
+
     # identify variables that exhibit no variance
     lg = std != 0
     # variables to ignore
-    variables_to_ignore = np.array(df.columns)[np.invert(lg)].tolist()
+    variables_to_ignore = np.array(df_.columns)[np.invert(lg)].tolist()
     if variables_to_ignore:
         logging.debug(f"Variables {variables_to_ignore} exhibit no variance in their signals.")
     # crop and scale
-    return (df[lg.index].loc[:, lg] - mean[lg]) / std[lg]
+    return (df_.loc[:, lg] - mean[lg]) / std[lg]
 
 
 def zero_pad_df(df: pd.DataFrame, signal_len: int) -> pd.DataFrame:
