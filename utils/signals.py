@@ -53,9 +53,9 @@ class OnlineStats:
 
 
 def normalize_df(df: pd.DataFrame, mean: pd.Series, std: pd.Series) -> pd.DataFrame:
-    assert len(mean) == len(std), ValueError(f"Mean and std must be the same length.")
+    assert len(mean) == len(std), ValueError(f"Mean and standard deviation must be the same length.")
     if isinstance(mean, pd.Series):
-        assert mean.index == std.index
+        assert all([el in mean.index for el in std.index]), ValueError(f"Mean and standard deviation do not have the same indices (mean: {list(mean.index)} != std: {list(std.index)})")
         columns = mean.index
         df_ = df[columns]
     else:
